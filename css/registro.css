@@ -1,0 +1,95 @@
+*{
+    padding: 0;
+    margin: 0;
+}
+.header{
+    background-image: url('../assets/img/headerFondo.png');
+    height: 60px;
+    width: 100%;
+    color: #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+section.registro{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+}
+section.registro .empleado{
+    display: flex;
+    flex-direction: column;
+    gap:15px;
+}
+section.registro .empleado .buscador{
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+.table{
+    min-width: 600px;
+    border: 1px #555 solid;
+    padding: 6px;
+}
+table>thead{
+    width: 100%;
+    height: 25px;
+}
+.table .dias_col{
+    border-left: #555 1px solid;
+    text-align: center;
+}
+.table td{
+    padding: 3px;
+    border-bottom: 1px #222 solid;
+}
+.table .code_col{
+    width: 50px;
+    text-align: right;
+}
+.table .hora{
+    width: 80px;
+    text-align: center;
+}
+
+
+.table .checkeds{
+    display: flex;
+    
+}
+.table .checkeds label{
+    display: flex;
+    position: relative;
+    flex-direction: column-reverse;
+    align-items: center;
+    width: 40px;
+}
+
+.codigo_empleado{
+    width: 40px;
+}
+
+#agregar{
+    width: 100%;
+    height: 20px;
+    background-color: #2980b9;
+    color: #fff;
+    border-radius: 2px;
+    border: 0;
+    box-shadow: none;
+}
+
+.delete{
+    display: inline-block;
+    color:white;
+    background-color:red;
+    border-radius: 8px;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+}
