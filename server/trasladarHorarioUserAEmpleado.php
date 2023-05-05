@@ -1,11 +1,23 @@
 <?php
 include_once 'conpg.php';
-$query = "  SELECT * FROM horario_user
-            ORDER BY emp_id ASC ";
+include_once 'con_msql.php';
+$query = "  SELECT personnel_employee.emp_code AS emp, horario_user.*
+            FROM horario_user
+            LEFT JOIN personnel_employee
+            ON personnel_employee.id = horario_user.emp_id
+            ORDER BY horario_user.emp_id ASC";
+
+/*$query = "  SELECT *
+            FROM horario_user
+            ORDER BY emp_id ASC";*/
 $result = pg_query($conexion, $query);
 $horario = pg_fetch_all($result);
+echo "TRUNCATE TABLE horario_empleado;";
+echo "ALTER TABLE horario_empleado AUTO_INCREMENT = 1;";
+$count = 0;
 foreach ($horario as $fila) {
-    $id = $fila['emp_id'];
+    $count++;
+    $dias = [];
     if(!is_null($fila['hora_entrada']) || !is_null($fila['hora_salida']))
     {
         $dias['default'] = $fila['hora_entrada'].",".$fila['hora_salida'];
@@ -47,16 +59,24 @@ foreach ($horario as $fila) {
         $result = pg_query($conexion, $sql);
         var_dump($result);*/
     }
-    $fila = [];
+    $row = [];
+    $id = $fila['emp_id'];
+    $code = $fila['emp'];
     foreach ($item as $horas => $dias) {
-        $fila[implode(',', array_unique($dias))] = $horas;
+        $fila_dias = implode(',', array_unique($dias));
+        $horasfila = explode(",",$horas);
+        $entrada = $horasfila[0];
+        $salida = $horasfila[1];
+        $sql = "INSERT INTO horario_empleado (emp_id, code_emp, dias, entrada, salida) VALUES ($id, $code, '$fila_dias', '$entrada','$salida');";
+        echo $sql;
+        //$row[implode(',', array_unique($dias))] = explode(",",$horas);
     }
     /*foreach ($item as $horas => $dias) {
         
     }*/
-echo json_encode(['id'=> $id]);
-echo json_encode($item);
-echo("******************************");
+    //header('Content-type:application/json;charset=utf-8');
+    //echo json_encode(['id'=> $id, 'emp_code' => $fila['emp'], 'horario' => $row ]);
+    //echo("******************************");
 }
 //echo json_encode($horario);
 ?>
