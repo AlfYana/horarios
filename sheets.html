@@ -1,27 +1,38 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Sheets API Quickstart</title>
+    <title>API HOJA</title>
     <meta charset="utf-8" />
   </head>
   <body>
-    <p>Sheets API Quickstart</p>
+    <p>Google API Hoja de Calculo OKR</p>
 
     <!--Add buttons to initiate auth sequence and sign out-->
-    <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
-    <button id="signout_button" onclick="handleSignoutClick()">Sign Out</button>
-
-    <pre id="content" style="white-space: pre-wrap;"></pre>
+    <button id="authorize_button" onclick="handleAuthClick()">Ingresar</button>
+    <button id="signout_button" onclick="handleSignoutClick()">Salir</button>
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Ayer</th>
+          <th>Hoy</th>
+        </tr>
+      </thead>
+      <tbody id="okrBody">
+        <tr>
+          <td>1</td>
+          <td>2</td>
+          <td>3</td>
+        </tr>
+      </tbody>
+    </table>
 
     <script type="text/javascript">
-      /* exported gapiLoaded */
-      /* exported gisLoaded */
-      /* exported handleAuthClick */
-      /* exported handleSignoutClick */
-
-      // TODO(developer): Set to client ID and API key from the Developer Console
       const CLIENT_ID = '1035463602081-fh003g44hje92qpcc53j4sf98pcikt2f.apps.googleusercontent.com';
       const API_KEY = 'AIzaSyBBUQ6OE64_ZQwawEXrDpx1XkB4ea6SL7A';
+      const DOC_SHEET = '13ZcUrdXTx86inyA5Ca-ZUqdhx3MoPrdrGmPqniZM5Us';
+      const HOJAS = { actual: "06-05", anterior: "10-05"};
+      const CELDA_DEFAULT = '';
 
       // Discovery doc URL for APIs used by the quickstart
       const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
@@ -89,7 +100,7 @@
           }
           document.getElementById('signout_button').style.visibility = 'visible';
           document.getElementById('authorize_button').innerText = 'Refresh';
-          await listMajors();
+          await obtenerOkrs();
         };
 
         if (gapi.client.getToken() === null) {
@@ -120,29 +131,122 @@
        * Print the names and majors of students in a sample spreadsheet:
        * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
        */
-      async function listMajors() {
+      async function getApiGoogle(sheet, rango, okrPosition) {
         let response;
         try {
           // Fetch first 10 files
           response = await gapi.client.sheets.spreadsheets.values.get({
             //spreadsheetId: '1AGj-V9_mYw87hX_mVPzrexU-dLF4YAXg_X9MuiwJ5pc',
-            spreadsheetId: '13ZcUrdXTx86inyA5Ca-ZUqdhx3MoPrdrGmPqniZM5Us',
-            range: '10-05!A5:G',
+            spreadsheetId: DOC_SHEET,
+            range: rango,
           });
         } catch (err) {
-          document.getElementById('content').innerText = err.message;
-          return;
+          //document.getElementById('content').innerText = err.message;
+          console.error(err.message);
+          return false;
         }
         const range = response.result;
         if (!range || !range.values || range.values.length == 0) {
           document.getElementById('content').innerText = 'No values found.';
-          return;
+          return false;
         }
         // Flatten to string to display
-        const output = range.values.reduce(
-            (str, row) => `${str}${row[0]}, ${row[8]}\n`,
-            'Name, Major:\n');
-        document.getElementById('content').innerText = output;
+        
+        //console.log(salida);
+        return transformarDatosdeApi(range.values, okrPosition);
+      }
+      function transformarDatosdeApi(array, okrPosition) {
+        const salida = array.filter( row => {
+          if(row[0] && row[0].trim().length>0){
+            return  row;
+          }
+        }).map( row => {
+          let valor = row[25]=='#DIV/0!'? "0,00": row[25].substring(0,row[25].length-1);
+          valor = parseInt(valor); 
+          let nombre = row[0].trim().split(' ').filter(elem => {
+            if(elem.length>0)
+              return elem;
+          }).reduce( (str, fila) => str+fila, "");
+          if(okrPosition == "anterior"){
+            return { "nombre": nombre, "anterior": valor};
+          }
+          else{
+            return { "nombre": nombre, "posterior": valor};
+          }
+        });
+        return salida;
+      }
+      async function obtenerOkrs()
+      {  
+        try {
+          let hoy = new Date();
+          let rangoActual = formatfechaDDMM(hoy)+'!A5:Z';
+          let rangoAnterior = formatfechaDDMM(getFechaAnterior(hoy))+'!A5:Z';
+          const hojaAnterior = await getApiGoogle(DOC_SHEET, rangoAnterior, "anterior");
+          const hojaActual = await getApiGoogle(DOC_SHEET, rangoActual, "posterior");
+          let tbody = document.getElementById('okrBody');
+          tbody.innerHTML = "";
+          actualizarTablaOkr(hojaAnterior, tbody);
+          actualizarTablaOkr(hojaActual, tbody);
+        } catch (error) {
+          console.error(error.message);
+          return;
+        }
+      }
+      
+      function creaFila(nombre, valorAyer, valorHoy){
+        let nuevaFila = document.createElement('tr');
+        //console.log(nombre.replace(/([A-Z])/g, ' $1'));
+        nuevaFila.innerHTML = `
+          <td class="nombreOrk" data-nombre="${nombre}">${nombre.replace(/([A-Z])/g, ' $1')}</td>
+          <td class="">${valorAyer}</td>
+          <td class="">${valorHoy}</td>
+        `;
+        return nuevaFila;
+      }
+      /*****    busca por defecto en la primera fila    *******/
+      function getFilaPorNombre(nombre, tbody){
+        let tr = false;
+        tbody.querySelectorAll('tr').forEach(fila => {
+          if(fila.querySelector('td:first-child').dataset.nombre == nombre)
+            tr = fila;
+        });
+        return tr;
+      }
+
+      function actualizarTablaOkr(cadena, nodoDom)
+      {
+        cadena.forEach(item => {
+          let tr = getFilaPorNombre(item.nombre, nodoDom);
+          if(tr){
+            if(item.anterior){
+              tr.querySelector('td:nth-child(2)').innerHTML = item.anterior;
+            }
+            if(item.posterior){
+              tr.querySelector('td:nth-child(3)').innerHTML = item.posterior;
+            }
+          }
+          else{
+            nodoDom.appendChild(creaFila(item.nombre, item.anterior??CELDA_DEFAULT, item.posterior??CELDA_DEFAULT));
+          }
+        });
+      }
+      function validaFecha(date){
+        return isNaN(Date.parse(date))? new Date(): date;
+      }
+
+      function getFechaAnterior(date)
+      {
+        let fecha = validaFecha(date);                  
+        return new Date(fecha.setDate(fecha.getDate() - 1)); 
+      }
+      function getFormatNumber( numero )
+      {
+        return ("00"+numero).slice(-2);
+      }
+      function formatfechaDDMM(date){
+        let fecha = validaFecha(date);
+        return getFormatNumber(fecha.getDate()) +"-"+ getFormatNumber(fecha.getMonth()+1);
       }
     </script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
