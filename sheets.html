@@ -6,14 +6,27 @@
   </head>
   <body>
     <p>Google API Hoja de Calculo OKR</p>
+    
+    <p>Hojas a obtener de Google Sheets </p>
+
+    <div>
+      <p>El promedio aparecera en la columna Ayer</p>
+      <label for="anterior">Ingrese el Nombre de la Hoja del Documento a Obtener: <input type="text" id="anterior"/></label>
+    </div>
+    <div>
+      <p>El promedio aparecera en la columna Hoy</p>
+      <label for="actual">Ingrese el Nombre de la Hoja del Documento a Obtener: <input type="text" id="actual"/></label>
+    </div>
 
     <!--Add buttons to initiate auth sequence and sign out-->
-    <button id="authorize_button" onclick="handleAuthClick()">Ingresar</button>
+    <button id="authorize_button" onclick="handleAuthClick()">Ingresar y Obtener Datos</button>
     <button id="signout_button" onclick="handleSignoutClick()">Salir</button>
+
     <table>
       <thead>
         <tr>
           <th>Nombre</th>
+          <!--th>Area</th-->
           <th>Ayer</th>
           <th>Hoy</th>
         </tr>
@@ -22,6 +35,7 @@
         <tr>
           <td>1</td>
           <td>2</td>
+          <td>3</td>
           <td>3</td>
         </tr>
       </tbody>
@@ -44,6 +58,12 @@
       let tokenClient;
       let gapiInited = false;
       let gisInited = false;
+
+      window.onload = function(){
+        let hoy = new Date();
+        document.getElementById("actual").value = formatfechaDDMM(hoy);
+        document.getElementById("anterior").value = formatfechaDDMM(getFechaAnterior(hoy));
+      };
 
       document.getElementById('authorize_button').style.visibility = 'hidden';
       document.getElementById('signout_button').style.visibility = 'hidden';
@@ -131,7 +151,7 @@
        * Print the names and majors of students in a sample spreadsheet:
        * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
        */
-      async function getApiGoogle(sheet, rango, okrPosition) {
+      async function getApiGoogle(sheet, rango) {
         let response;
         try {
           // Fetch first 10 files
@@ -150,40 +170,45 @@
           document.getElementById('content').innerText = 'No values found.';
           return false;
         }
-        // Flatten to string to display
-        
-        //console.log(salida);
-        return transformarDatosdeApi(range.values, okrPosition);
+        return range.values;
       }
-      function transformarDatosdeApi(array, okrPosition) {
-        const salida = array.filter( row => {
+      async function transformarDatosdeApi(sheet, rango, okrPosition) {
+        const array = await getApiGoogle(sheet, rango);
+        let salida = array.filter( row => {
           if(row[0] && row[0].trim().length>0){
             return  row;
           }
         }).map( row => {
-          let valor = row[25]=='#DIV/0!'? "0,00": row[25].substring(0,row[25].length-1);
-          valor = parseInt(valor); 
+          let valor = (row[25] === undefined|| row[25]=='#DIV/0!')? "0,00": row[25].substring(0,row[25].length-1);
+          valor = parseInt(valor);
+          let area  = (row[3] === undefined|| row[3]=='#DIV/0!')? "": row[3];
           let nombre = row[0].trim().split(' ').filter(elem => {
             if(elem.length>0)
               return elem;
           }).reduce( (str, fila) => str+fila, "");
+
           if(okrPosition == "anterior"){
-            return { "nombre": nombre, "anterior": valor};
+            return { "nombre": nombre, "area": area, "anterior": valor};
           }
           else{
-            return { "nombre": nombre, "posterior": valor};
+            return { "nombre": nombre, "area": area, "posterior": valor};
           }
         });
+
         return salida;
       }
       async function obtenerOkrs()
       {  
         try {
-          let hoy = new Date();
-          let rangoActual = formatfechaDDMM(hoy)+'!A5:Z';
-          let rangoAnterior = formatfechaDDMM(getFechaAnterior(hoy))+'!A5:Z';
-          const hojaAnterior = await getApiGoogle(DOC_SHEET, rangoAnterior, "anterior");
-          const hojaActual = await getApiGoogle(DOC_SHEET, rangoActual, "posterior");
+          let actual = document.getElementById("actual").value;
+          let anterior = document.getElementById("anterior").value; 
+          console.log(actual, anterior);
+          let rangoActual = actual+'!A5:Z';
+          let rangoAnterior = anterior+'!A5:Z';
+          const hojaAnterior = await transformarDatosdeApi(DOC_SHEET, rangoAnterior, "anterior");
+          const hojaActual = await transformarDatosdeApi(DOC_SHEET, rangoActual, "posterior");
+          console.log(hojaActual);
+          console.log(hojaAnterior);
           let tbody = document.getElementById('okrBody');
           tbody.innerHTML = "";
           actualizarTablaOkr(hojaAnterior, tbody);
