@@ -207,6 +207,7 @@
           let rangoAnterior = anterior+'!A5:Z';
           const hojaAnterior = await transformarDatosdeApi(DOC_SHEET, rangoAnterior, "anterior");
           const hojaActual = await transformarDatosdeApi(DOC_SHEET, rangoActual, "posterior");
+          enviarAlServidor(hojaAnterior, rangoAnterior); 
           console.log(hojaActual);
           console.log(hojaAnterior);
           let tbody = document.getElementById('okrBody');
@@ -217,6 +218,26 @@
           console.error(error.message);
           return;
         }
+      }
+
+      function enviarAlServidor(hojaData, hojaNombre)
+      {
+        let data = new FormData();
+        data.append('nombre', hojaNombre);
+        data.append('data', hojaData);
+        console.log(hojaData);
+        fetch('./server/generaArchivo.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          nombre: hojaNombre,
+          datos: hojaData,
+        }), 
+        }).then( response => {
+          console.log(response.text());
+        });
       }
       
       function creaFila(nombre, valorAyer, valorHoy){
