@@ -27,8 +27,8 @@
         <tr>
           <th>Nombre</th>
           <!--th>Area</th-->
-          <th>Ayer</th>
-          <th>Hoy</th>
+          <th id="tdAnterior">Ayer</th>
+          <th id="tdActual">Hoy</th>
         </tr>
       </thead>
       <tbody id="okrBody">
@@ -61,8 +61,21 @@
 
       window.onload = function(){
         let hoy = new Date();
-        document.getElementById("actual").value = formatfechaDDMM(hoy);
-        document.getElementById("anterior").value = formatfechaDDMM(getFechaAnterior(hoy));
+        let inputActual = document.getElementById("actual");
+        let inputAnterior = document.getElementById("anterior");
+        inputActual.addEventListener("input", event => {
+          document.getElementById("tdActual").dataset.hoja = event.target.value;
+          document.getElementById("tdActual").innerHTML = event.target.value;
+        });
+        inputAnterior.addEventListener("input", event => {
+          document.getElementById("tdAnterior").dataset.hoja = event.target.value;
+          document.getElementById("tdAnterior").innerHTML = event.target.value;
+        });
+        let loader = new CustomEvent("input", { "detail": "Evento Al cargar el DOM" });
+        inputActual.value = formatfechaDDMM(hoy);
+        inputAnterior.value = formatfechaDDMM(getFechaAnterior(hoy));
+        inputActual.dispatchEvent(loader);
+        inputAnterior.dispatchEvent(loader);
       };
 
       document.getElementById('authorize_button').style.visibility = 'hidden';
@@ -228,7 +241,19 @@
         method: 'POST',
         body: data,
         }).then( response => {
-          console.log(response.json());
+          //console.log(response.json());
+          return response.json();
+        })
+        .then( data => {
+          console.log(data.ruta);
+          //llamando al servidor para obtener los datos de la ruta del archivo json creado anteriormente
+          fetch("./server/" + data.ruta)
+          .then(response => response.json())
+          .then(data => {
+            console.log(data);
+            //obtiene el numero de columna de td
+            //cell.cellIndex
+          });
         })
         .catch( error => console.error(error));
       }
