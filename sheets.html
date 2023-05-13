@@ -21,7 +21,7 @@
     <!--Add buttons to initiate auth sequence and sign out-->
     <button id="authorize_button" onclick="handleAuthClick()">Ingresar y Obtener Datos</button>
     <button id="signout_button" onclick="handleSignoutClick()">Salir</button>
-
+    <div id="mensajes"></div>
     <table>
       <thead>
         <tr>
@@ -156,24 +156,22 @@
         try {
           // Fetch first 10 files
           response = await gapi.client.sheets.spreadsheets.values.get({
-            //spreadsheetId: '1AGj-V9_mYw87hX_mVPzrexU-dLF4YAXg_X9MuiwJ5pc',
             spreadsheetId: DOC_SHEET,
             range: rango,
           });
         } catch (err) {
-          //document.getElementById('content').innerText = err.message;
-          console.error(err.message);
+          document.getElementById('mensajes').innerText = err.message;
+          console.error(err);
           return false;
         }
         const range = response.result;
         if (!range || !range.values || range.values.length == 0) {
-          document.getElementById('content').innerText = 'No values found.';
+          document.getElementById('mensajes').innerText = 'No se encontraron valores.';
           return false;
         }
         return range.values;
       }
-      async function transformarDatosdeApi(sheet, rango, okrPosition) {
-        const array = await getApiGoogle(sheet, rango);
+      function transformarDatosdeApi(array) {
         let salida = array.filter( row => {
           if(row[0] && row[0].trim().length>0){
             return  row;
@@ -186,13 +184,7 @@
             if(elem.length>0)
               return elem;
           }).reduce( (str, fila) => str+fila, "");
-
-          if(okrPosition == "anterior"){
-            return { "nombre": nombre, "area": area, "anterior": valor};
-          }
-          else{
-            return { "nombre": nombre, "area": area, "posterior": valor};
-          }
+          return { "nombre": nombre, "area": area, "promedio": valor};
         });
 
         return salida;
@@ -201,43 +193,44 @@
       {  
         try {
           let actual = document.getElementById("actual").value;
-          let anterior = document.getElementById("anterior").value; 
-          console.log(actual, anterior);
+          let anterior = document.getElementById("anterior").value;
           let rangoActual = actual+'!A5:Z';
           let rangoAnterior = anterior+'!A5:Z';
-          const hojaAnterior = await transformarDatosdeApi(DOC_SHEET, rangoAnterior, "anterior");
-          const hojaActual = await transformarDatosdeApi(DOC_SHEET, rangoActual, "posterior");
-          enviarAlServidor(hojaAnterior, rangoAnterior); 
-          console.log(hojaActual);
-          console.log(hojaAnterior);
-          let tbody = document.getElementById('okrBody');
-          tbody.innerHTML = "";
-          actualizarTablaOkr(hojaAnterior, tbody);
-          actualizarTablaOkr(hojaActual, tbody);
+          const dataAnterior = await getApiGoogle(DOC_SHEET, rangoAnterior);
+          const dataActual   = await getApiGoogle(DOC_SHEET, rangoActual);
+          document.getElementById('okrBody').innerHTML = "";
+          if( dataActual ){
+            utilizarDatos(dataActual, actual);
+          }
+          if( dataAnterior ){
+            utilizarDatos(dataAnterior, anterior);
+          }
         } catch (error) {
           console.error(error.message);
           return;
         }
       }
 
+      function utilizarDatos( datas, nombre ) {
+        let hojaDatos = transformarDatosdeApi(datas);
+        enviarAlServidor(hojaDatos, nombre);
+        /*let tbody = document.getElementById('okrBody'); 
+        actualizarTablaOkr(hojaDatos, tbody);*/
+      }
+
       function enviarAlServidor(hojaData, hojaNombre)
       {
         let data = new FormData();
         data.append('nombre', hojaNombre);
-        data.append('data', hojaData);
+        data.append('datos', JSON.stringify(hojaData));
         console.log(hojaData);
         fetch('./server/generaArchivo.php', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          nombre: hojaNombre,
-          datos: hojaData,
-        }), 
+        body: data,
         }).then( response => {
-          console.log(response.text());
-        });
+          console.log(response.json());
+        })
+        .catch( error => console.error(error));
       }
       
       function creaFila(nombre, valorAyer, valorHoy){
