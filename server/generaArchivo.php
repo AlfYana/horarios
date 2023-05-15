@@ -1,10 +1,11 @@
 <?php
     $data = json_decode($_POST['datos'], true);
-    $nombre = $_POST['nombre'];
+    $hoja = $_POST['hoja'];
+    $filename = $_POST['filename'];
     //$filename = getcwd()."\\hojas\\".$nombre.".json";
-    $filename = $nombre.'.json';
+    $name = $filename.'.json';
     header('Content-type:application/json;charset=utf-8');
-    $texto = json_encode($data);
-    file_put_contents("$filename", $texto);
-    echo json_encode(array( "ruta" => $filename));
+    $contenido = json_encode( array('fecha' => $hoja, 'datos' => $data ) );
+    file_put_contents("$name", $contenido);
+    echo json_encode(array( "ruta" => $name));
 ?>

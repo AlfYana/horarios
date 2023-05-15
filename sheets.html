@@ -213,10 +213,10 @@
           const dataActual   = await getApiGoogle(DOC_SHEET, rangoActual);
           document.getElementById('okrBody').innerHTML = "";
           if( dataActual ){
-            utilizarDatos(dataActual, actual);
+            utilizarDatos(dataActual, actual, "posterior");
           }
           if( dataAnterior ){
-            utilizarDatos(dataAnterior, anterior);
+            utilizarDatos(dataAnterior, anterior, "anterior");
           }
         } catch (error) {
           console.error(error.message);
@@ -224,17 +224,18 @@
         }
       }
 
-      function utilizarDatos( datas, nombre ) {
+      function utilizarDatos( datas, nombre, filename ) {
         let hojaDatos = transformarDatosdeApi(datas);
-        enviarAlServidor(hojaDatos, nombre);
+        enviarAlServidor(hojaDatos, nombre, filename);
         /*let tbody = document.getElementById('okrBody'); 
         actualizarTablaOkr(hojaDatos, tbody);*/
       }
 
-      function enviarAlServidor(hojaData, hojaNombre)
+      function enviarAlServidor(hojaData, hojaNombre, filename)
       {
         let data = new FormData();
-        data.append('nombre', hojaNombre);
+        data.append('hoja', hojaNombre);
+        data.append('filename', filename);
         data.append('datos', JSON.stringify(hojaData));
         console.log(hojaData);
         fetch('./server/generaArchivo.php', {
