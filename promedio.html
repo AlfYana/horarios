@@ -25,7 +25,55 @@
     let urlPosterior = `./server/${FECHAS[1]}.json`;
     window.onload = actualizarDatos();
     function actualizarDatos() {
-        
+        let tbody = document.getElementById("promedio");
+        tbody.innerHTML = "";
+        actualizarTabla( {url: urlPosterior, dom: tbody, column: 3} );
+        actualizarTabla( {url: urlAnterior, dom: tbody, column: 2} );
     }
+
+    function actualizarTabla( params ) {
+        //llamando al servidor para obtener los datos de la ruta del archivo json creado anteriormente
+        fetch(params.url)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                let nodo = params.dom;
+                let columna = params.column;
+                let fecha = data.fecha;
+                nodo.closest("table").querySelector("thead tr").querySelector(`td:nth-child(${columna})`).innerHTML = fecha;
+                data.datos.forEach(item => {
+                    let tr = getFilaPorNombre(item.nombre, nodo);
+                    if(tr){
+                        tr.querySelector(`td:nth-child(${columna})`).innerHTML = item.promedio;
+                    }
+                    else{
+                        celdaAnterior =
+                        nodo.appendChild( creaFila(item, columna));
+                    }
+                });
+            })
+            .catch( err => console.error(err));
+    }
+    /*****    busca por defecto en la primera fila    *******/
+    function getFilaPorNombre(nombre, tbody){
+        let tr = false;
+        tbody.querySelectorAll('tr').forEach(fila => {
+          if(fila.querySelector('td:first-child').dataset.nombre == nombre)
+            tr = fila;
+        });
+        return tr;
+    }
+
+    function creaFila(fila, columna){
+        let nuevaFila = document.createElement('tr');
+        //console.log(nombre.replace(/([A-Z])/g, ' $1'));
+        nuevaFila.innerHTML = `
+          <td class="nombreOrk" data-nombre="${fila.nombre}">${fila.nombre.replace(/([A-Z])/g, ' $1')}</td>
+          <td class=""></td>
+          <td class=""></td>
+        `;
+        nuevaFila.querySelector(`td:nth-child(${columna})`).innerHTML = fila.promedio;
+        return nuevaFila;
+      }
 </script>
 </html>
