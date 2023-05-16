@@ -2,7 +2,7 @@
 
 $dbservername = "127.0.0.1";
 $dbusername = "postgres";
-$dbname = "biotimeAptv";
+$dbname = "aptv";
 $dbpassword = "TruPassNect789#";
 $puerto = "7496";
 

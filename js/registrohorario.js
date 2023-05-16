@@ -20,7 +20,10 @@ function actualizarPersonal() {
         let options = "";
         let nombre = "";
         data.forEach(elem => {
-            nombre = elem.first_name + " " + elem.last_name;
+            nombre = elem.first_name;
+            if(elem.last_name != null){
+                nombre = nombre + " " + elem.last_name;
+            }
             options = options + `
             <option value="${elem.id}" data-emp="${elem.emp_code}">${nombre}</option>
             `;
@@ -57,11 +60,11 @@ function agregarHorariosExistentes(emp_code) {
     })
     .then(response => response.json()) 
     .then(json => {
-      console.log(json);
+      //console.log(json);
       if(json.length > 0)
       {
         json.forEach(elem => {
-            agregate({ id: elem.id, entrada: elem.entrada, salida: elem.salida, dias: elem.dia.split(',')})
+            agregate({ id: elem.id, entrada: elem.entrada, salida: elem.salida, dias: elem.dias.split(',')})
         });
       }
       else{
@@ -93,7 +96,7 @@ tabla.addEventListener("change", function(e){
 
 /****** Evento para eliminar un horario *****/
 tabla.addEventListener("click", function(e){
-    console.log(e.target.classList);
+    //console.log(e.target.classList);
     if ( e.target.classList.contains("delete")) {
         let data = new FormData();
         let id = e.target.closest("tr").querySelector(".code_col").innerText;
@@ -107,7 +110,7 @@ tabla.addEventListener("click", function(e){
             .then(response => response.json()) 
             .then(json => {
                 console.log(json);
-                if(json.eliminadas)
+                if(json.data.eliminadas)
                 {
                     e.target.closest("tr").remove();
                 }
@@ -157,15 +160,12 @@ function agregate(item){
                 input.checked = false;
         });
     }
-    else{
-        console.log("none");
-    }
     
 }
 
 /********  Evento para guardar datos************/
 document.getElementById("guardar").addEventListener("click", function(){
-    let filas = tabla.querySelectorAll("tr");
+    let filas = tabla.querySelector("tbody").querySelectorAll("tr");
     let horario = [];
     filas.forEach(fila => {
         let checkeds = fila.querySelectorAll('.checkeds input:checked');
@@ -198,17 +198,18 @@ function saveHorario(horario, empleado) {
     const registro = new FormData();
     registro.append('horario', JSON.stringify(horario));
     registro.append('empleado', empleado);
-    fetch('/horarios/server/recibirHorario.php', {
+    fetch('/horarios/server/guardarHorario.php', {
         method: 'POST',
         body: registro, 
     })
     .then(function(response){
         if(response.ok)
         {
-            console.log(response.text());
-            //return response.json();
             tabla.querySelector('tbody').innerHTML ='';
             agregarHorariosExistentes(empleado);
+            return response.json();
         }
-    }).catch( err => console.error(err));
+    })
+    .then( data => console.log(data))
+    .catch( err => console.error(err));
 }

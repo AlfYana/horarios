@@ -1,6 +1,5 @@
 <?php
-include_once 'conpg.php';
-include_once 'con_msql.php';
+include_once '../conpg.php';
 $query = "  SELECT personnel_employee.emp_code AS emp, horario_user.*
             FROM horario_user
             LEFT JOIN personnel_employee

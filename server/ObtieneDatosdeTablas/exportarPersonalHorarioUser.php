@@ -1,6 +1,9 @@
 <?php
-include_once 'conpg.php';
-$query = "  SELECT * FROM horario_user
+include_once '../conpg.php';
+$query = "  SELECT emp_id, nombre, apellido, depto, pe.emp_code 
+            FROM horario_user hu 
+            INNER JOIN personnel_employee pe
+            ON pe.id = hu.emp_id
             ORDER BY emp_id ASC ";
 $result = pg_query($conexion, $query);
 $horario = pg_fetch_all($result);
@@ -18,9 +21,8 @@ foreach ($horario as $fila) {
     //var_dump($valores);
     $valores = implode(",", $valores);
     $claves = implode(",", $claves);
-    $sql = "INSERT INTO horario_user($claves) VALUES($valores);";
+    $sql = "INSERT INTO personal($claves) VALUES($valores);";
 //echo json_encode(['id'=> $id]);
-echo json_encode($sql);
+echo $sql;
 }
-//echo json_encode($horario);
 ?>
