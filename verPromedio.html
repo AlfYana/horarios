@@ -40,7 +40,7 @@
                 let nodo = params.dom;
                 let columna = params.column;
                 let fecha = data.fecha;
-                nodo.closest("table").querySelector("thead tr").querySelector(`td:nth-child(${columna})`).innerHTML = fecha;
+                nodo.closest("table").querySelector("thead tr").querySelector(`th:nth-child(${columna})`).innerHTML = fecha;
                 data.datos.forEach(item => {
                     let tr = getFilaPorNombre(item.nombre, nodo);
                     if(tr){
