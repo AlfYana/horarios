@@ -40,7 +40,11 @@ function actualizarPersonal() {
 
 
 document.getElementById('sincronizar').addEventListener('click', even => {
-    fetch('getPersonal.json', {
+    getNuevosEmpleadosBiometrico();
+});
+
+function getNuevosEmpleadosBiometrico(){
+    fetch('server/getNotPersonal.php', {
         method: 'GET',
     })
     .then(response=> {
@@ -61,15 +65,15 @@ document.getElementById('sincronizar').addEventListener('click', even => {
                 <td class="emp_id">${elem.id}</td>
                 <td class="emp_code">${elem.emp_code}</td>
                 <td><input type="text" value="${elem.first_name}" name="nombre"></td>
-                <td><input type="text" value="${elem.last_name}" name="apellido"></td>
-                <td><input type="text" value="${elem.depto}" name="area"></td>
-                <td><input type="checkbox" name="activo" id="" checked></td>
+                <td><input type="text" value="${elem.last_name??''}" name="apellido"></td>
+                <td><input type="text" value="${elem.depto?elem.depto:''}" name="area"></td>
+                <td><input type="checkbox" name="activo" id=""></td>
             </tr>`;
         });
         document.getElementById("sincPersonalBiometrico").innerHTML = trs;
     })
     .catch(err => console.error( err));
-});
+}
 
 document.getElementById("agregarPersonal").addEventListener("click", () =>{
     let inputs = document.getElementById("sincPersonalBiometrico").querySelectorAll("input:checked");
@@ -86,7 +90,7 @@ document.getElementById("agregarPersonal").addEventListener("click", () =>{
             }
         );
     });
-    if(personas.length>0){
+    if( personas.length > 0 ){
         let data = new FormData();
         data.append('personas', JSON.stringify(personas));
         fetch('server/agregarPersonas.php', {
@@ -95,7 +99,7 @@ document.getElementById("agregarPersonal").addEventListener("click", () =>{
         })
         .then( response => response.json())
         .then( data => {
-            console.log("guardado");
+            getNuevosEmpleadosBiometrico();
             console.log(data);
         })
         .catch( err => console.log(err));

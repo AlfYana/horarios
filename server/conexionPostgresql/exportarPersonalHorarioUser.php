@@ -1,11 +1,11 @@
 <?php
-include_once '../conpg.php';
+include_once 'conpg.php';
 $query = "  SELECT emp_id, nombre, apellido, depto, pe.emp_code 
             FROM horario_user hu 
             INNER JOIN personnel_employee pe
             ON pe.id = hu.emp_id
             ORDER BY emp_id ASC ";
-$result = pg_query($conexion, $query);
+$result = pg_query($conexionPG, $query);
 $horario = pg_fetch_all($result);
 foreach ($horario as $fila) {
     //echo json_encode($fila);

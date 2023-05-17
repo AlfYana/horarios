@@ -6,9 +6,9 @@ $dbname = "aptv";
 $dbpassword = "TruPassNect789#";
 $puerto = "7496";
 
-$conexion=pg_connect("host=$dbservername port=$puerto dbname=$dbname user=$dbusername password=$dbpassword");
+$conexionPG=pg_connect("host=$dbservername port=$puerto dbname=$dbname user=$dbusername password=$dbpassword");
 
-if($conexion){
+if($conexionPG){
     //var_dump( "Conexion BD OK ");
 }
 else{

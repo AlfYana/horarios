@@ -25,7 +25,7 @@ function actualizarPersonal() {
                 nombre = nombre + " " + elem.apellido;
             }
             options = options + `
-            <option value="${elem.emp_code}" data-emp="${elem.emp_code}">${nombre}</option>
+            <option value="${elem.emp_id}" data-emp="${elem.emp_code}">${nombre}</option>
             `;
         });
         personal.innerHTML = options;
@@ -39,15 +39,15 @@ let emp_code    = document.querySelector("input[name='code']");
 let input       = document.getElementById("empleados");
 input.addEventListener("input", function() {
     tabla.querySelector('tbody').innerHTML ='';
-  let seleccionado = document.getElementById("list_personal").querySelector("option[value='" + input.value + "']");
-  if (seleccionado) {
-    emp_code.value = seleccionado.value;
-    input.value = seleccionado.text;
-    agregarHorariosExistentes(seleccionado.value);
-  }
-  else{
-    document.querySelector("input[name='code']").value = '';
-  }
+    let seleccionado = document.getElementById("list_personal").querySelector("option[value='" + input.value + "']");
+    if (seleccionado) {
+        emp_code.value = seleccionado.value;
+        input.value = seleccionado.text;
+        agregarHorariosExistentes(seleccionado.value);
+    }
+    else{
+        document.querySelector("input[name='code']").value = '';
+    }
 });
 
 /*********** function que agrega los horarios *************/
@@ -101,7 +101,7 @@ tabla.addEventListener("click", function(e){
         let id = e.target.closest("tr").querySelector(".code_col").innerText;
         if(id)
         {
-            let data = new FormData();Ì
+            let data = new FormData();
             data.append('id', id);
             fetch('server/eliminarHorario.php', {
                 method: "POST",

@@ -1,5 +1,5 @@
 <?php
-include_once '../conpg.php';
+include_once 'conpg.php';
 $query = "  SELECT personnel_employee.emp_code AS emp, horario_user.*
             FROM horario_user
             LEFT JOIN personnel_employee
@@ -9,7 +9,7 @@ $query = "  SELECT personnel_employee.emp_code AS emp, horario_user.*
 /*$query = "  SELECT *
             FROM horario_user
             ORDER BY emp_id ASC";*/
-$result = pg_query($conexion, $query);
+$result = pg_query($conexionPG, $query);
 $horario = pg_fetch_all($result);
 echo "TRUNCATE TABLE horario_empleado;";
 echo "ALTER TABLE horario_empleado AUTO_INCREMENT = 1;";
@@ -55,7 +55,7 @@ foreach ($horario as $fila) {
         /*$ent = is_null($horas['entrada'])? '00:00:00': $horas['entrada'];
         $sal = is_null($horas['salida'])? '00:00:00': $horas['salida'];
         $sql = "INSERT INTO horario_empleado (emp_id, dia, entrada, salida) VALUES ($id, '$dia', '$ent','$sal');";
-        $result = pg_query($conexion, $sql);
+        $result = pg_query($conexionPG, $sql);
         var_dump($result);*/
     }
     $row = [];
