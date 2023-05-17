@@ -9,7 +9,6 @@
 </head>
 <body>
     <br>
-    <button id="sincronizar">Sincronizar Personal</button>
     <table>
         <thead>
             <tr>
@@ -18,32 +17,31 @@
                 <th>Code Emp</th>
                 <th>Nombre</th>
                 <th>Apellido</th>
+                <th>Area</th>
+                <th>Activo</th>
             </tr>
         </thead>
-        <tbody>
-            <tr>
-                <td>1</td>
-                <td>2</td>
-                <td>3</td>
-                <td>4</td>
-                <td>5</td>
-            </tr>
-            <tr>
-                <td>1</td>
-                <td>2</td>
-                <td>3</td>
-                <td>4</td>
-                <td>5</td>
-            </tr>
-            <tr>
-                <td>1</td>
-                <td>2</td>
-                <td>3</td>
-                <td>4</td>
-                <td>5</td>
-            </tr>
+        <tbody id="empleados">
         </tbody>
     </table>
+    <button id="sincronizar">Sincronizar Personal</button>
+    <br>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Id Emp</th>
+                <th>Code Emp</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Area</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="sincPersonalBiometrico">
+        </tbody>
+    </table>
+    <button id="agregarPersonal"> Guardar En BD</button>
+    <script src="./js/sincronizazion.js"></script>
 </body>
-<script src="./js/sincronizazion.js"></script>
 </html>

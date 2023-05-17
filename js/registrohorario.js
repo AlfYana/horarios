@@ -5,7 +5,7 @@ let tabla    = document.getElementById("tabla-registros");
 function actualizarPersonal() {
     const data = new FormData();
     data.append('texto', 'busqueda');
-    fetch('/horarios/server/personal.php', {
+    fetch('server/personal.php', {
         method: 'POST',
         body: data, 
     })
@@ -20,12 +20,12 @@ function actualizarPersonal() {
         let options = "";
         let nombre = "";
         data.forEach(elem => {
-            nombre = elem.first_name;
-            if(elem.last_name != null){
-                nombre = nombre + " " + elem.last_name;
+            nombre = elem.nombre;
+            if(elem.apellido != null){
+                nombre = nombre + " " + elem.apellido;
             }
             options = options + `
-            <option value="${elem.id}" data-emp="${elem.emp_code}">${nombre}</option>
+            <option value="${elem.emp_code}" data-emp="${elem.emp_code}">${nombre}</option>
             `;
         });
         personal.innerHTML = options;
@@ -98,10 +98,10 @@ tabla.addEventListener("change", function(e){
 tabla.addEventListener("click", function(e){
     //console.log(e.target.classList);
     if ( e.target.classList.contains("delete")) {
-        let data = new FormData();
         let id = e.target.closest("tr").querySelector(".code_col").innerText;
         if(id)
         {
+            let data = new FormData();Ì
             data.append('id', id);
             fetch('server/eliminarHorario.php', {
                 method: "POST",
@@ -188,17 +188,19 @@ document.getElementById("guardar").addEventListener("click", function(){
             console.log("Selecciona algun dia porfavor");
         }
     });
-    saveHorario(horario, emp_code.value);
+    let codigoEmpleado = document.getElementById("list_personal").querySelector("option[value='" + emp_code.value + "']").dataset.emp;
+    saveHorario(horario, emp_code.value, codigoEmpleado);
 });
 
 /****  Enviando Horario al servidor ****/
-function saveHorario(horario, empleado) {
+function saveHorario(horario, empleado, codigo) {
     
     console.log(horario);
     const registro = new FormData();
     registro.append('horario', JSON.stringify(horario));
     registro.append('empleado', empleado);
-    fetch('/horarios/server/guardarHorario.php', {
+    registro.append('code', codigo);
+    fetch('server/guardarHorario.php', {
         method: 'POST',
         body: registro, 
     })

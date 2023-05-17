@@ -2,7 +2,7 @@
 //$texto = $_POST['texto'];
 /*$sql = "SELECT id, emp_code, first_name, last_name FROM public.personnel_employee
 ORDER BY id ASC";*/
-$sql = "SELECT emp_id AS id, emp_code, nombre AS first_name, apellido AS last_name FROM personal WHERE activo = 1
+$sql = "SELECT id, emp_id, emp_code, nombre, apellido, depto, activo FROM personal WHERE activo = 1
 ORDER BY id ASC";
 /*if(isset($texto) || !empty($texto)){
     $sql = "SELECT id, emp_code, first_name, last_name FROM public.personnel_employee

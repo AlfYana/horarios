@@ -1,6 +1,7 @@
 <?php
-    $horario = json_decode($_POST['horario'], true);
-    $empleado = $_POST['empleado'];
+    $horario    = json_decode($_POST['horario'], true);
+    $empleado   = $_POST['empleado'];
+    $code       = $_POST['code'];
     /*//libreria que conecta a la db de postgresql, dicha conexion esta en la variable $conexion
     include_once 'conpg.php';*/
     include_once 'con_msql.php';
@@ -25,7 +26,7 @@
         }
         else
         {
-            $sql = "INSERT INTO horario_empleado (emp_id, dias, entrada, salida) VALUES ($empleado, '$dias', '$entrada','$salida');";
+            $sql = "INSERT INTO horario_empleado (emp_id, dias, entrada, salida, code_emp) VALUES ($empleado, '$dias', '$entrada','$salida', $code);";
             /*$result = pg_query($conexion, $sql);
             var_dump($result);
             
