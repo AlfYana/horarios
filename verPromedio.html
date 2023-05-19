@@ -20,23 +20,27 @@
 </body>
 <script>
     let tabla = document.getElementById("promedio");
-    const FECHAS = ["anterior", "posterior"];
-    let urlAnterior = `./server/${FECHAS[0]}.json`;
-    let urlPosterior = `./server/${FECHAS[1]}.json`;
     window.onload = actualizarDatos();
     function actualizarDatos() {
         let tbody = document.getElementById("promedio");
         tbody.innerHTML = "";
-        actualizarTabla( {url: urlPosterior, dom: tbody, column: 3} );
-        actualizarTabla( {url: urlAnterior, dom: tbody, column: 2} );
+        actualizarTabla( {file: 'posterior.json', dom: tbody, column: 3} );
+        actualizarTabla( {file: 'anterior.json', dom: tbody, column: 2} );
     }
 
     function actualizarTabla( params ) {
         //llamando al servidor para obtener los datos de la ruta del archivo json creado anteriormente
-        fetch(params.url)
-            .then(response => response.json())
+        let data = new FormData();
+        data.append( "archivo", params.file );
+        fetch("./server/getArchivo.php", {
+            method: "POST",
+            body: data,
+        })
+            .then(response => {
+                if(response.ok) return response.json();
+                else throw new Error(response.status);
+            })
             .then(data => {
-                console.log(data);
                 let nodo = params.dom;
                 let columna = params.column;
                 let fecha = data.fecha;
