@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>API HOJA</title>
+    <title>Actualizar De OKRs Google</title>
     <meta charset="utf-8" />
   </head>
   <body>
@@ -31,7 +31,7 @@
           <th id="tdActual">Hoy</th>
         </tr>
       </thead>
-      <tbody id="okrBody">
+      <tbody id="promedio">
         <tr>
           <td>1</td>
           <td>2</td>
@@ -40,7 +40,8 @@
         </tr>
       </tbody>
     </table>
-
+    
+    <script src="./googleApi/getArchivosJson.js"></script>
     <script type="text/javascript">
       const CLIENT_ID = '1035463602081-fh003g44hje92qpcc53j4sf98pcikt2f.apps.googleusercontent.com';
       const API_KEY = 'AIzaSyBBUQ6OE64_ZQwawEXrDpx1XkB4ea6SL7A';
@@ -211,7 +212,6 @@
           let rangoAnterior = anterior+'!A5:Z';
           const dataAnterior = await getApiGoogle(DOC_SHEET, rangoAnterior);
           const dataActual   = await getApiGoogle(DOC_SHEET, rangoActual);
-          document.getElementById('okrBody').innerHTML = "";
           if( dataActual ){
             utilizarDatos(dataActual, actual, "posterior");
           }
@@ -227,8 +227,6 @@
       function utilizarDatos( datas, nombre, filename ) {
         let hojaDatos = transformarDatosdeApi(datas);
         enviarAlServidor(hojaDatos, nombre, filename);
-        /*let tbody = document.getElementById('okrBody'); 
-        actualizarTablaOkr(hojaDatos, tbody);*/
       }
 
       function enviarAlServidor(hojaData, hojaNombre, filename)
@@ -238,7 +236,7 @@
         data.append('filename', filename);
         data.append('datos', JSON.stringify(hojaData));
         console.log(hojaData);
-        fetch('./server/generaArchivo.php', {
+        fetch('./googleApi/generaArchivo.php', {
         method: 'POST',
         body: data,
         }).then( response => {
@@ -248,10 +246,12 @@
         .then( data => {
           console.log(data.ruta);
           //llamando al servidor para obtener los datos de la ruta del archivo json creado anteriormente
-          fetch("./server/" + data.ruta)
+          fetch("./googleApi/" + data.ruta)
           .then(response => response.json())
           .then(data => {
             console.log(data);
+            //muestra los archivos. funcion del archivo js getArchivoJson
+            actualizarDatosPromedios();
             //obtiene el numero de columna de td
             //cell.cellIndex
           });
@@ -259,43 +259,6 @@
         .catch( error => console.error(error));
       }
       
-      function creaFila(nombre, valorAyer, valorHoy){
-        let nuevaFila = document.createElement('tr');
-        //console.log(nombre.replace(/([A-Z])/g, ' $1'));
-        nuevaFila.innerHTML = `
-          <td class="nombreOrk" data-nombre="${nombre}">${nombre.replace(/([A-Z])/g, ' $1')}</td>
-          <td class="">${valorAyer}</td>
-          <td class="">${valorHoy}</td>
-        `;
-        return nuevaFila;
-      }
-      /*****    busca por defecto en la primera fila    *******/
-      function getFilaPorNombre(nombre, tbody){
-        let tr = false;
-        tbody.querySelectorAll('tr').forEach(fila => {
-          if(fila.querySelector('td:first-child').dataset.nombre == nombre)
-            tr = fila;
-        });
-        return tr;
-      }
-
-      function actualizarTablaOkr(cadena, nodoDom)
-      {
-        cadena.forEach(item => {
-          let tr = getFilaPorNombre(item.nombre, nodoDom);
-          if(tr){
-            if(item.anterior){
-              tr.querySelector('td:nth-child(2)').innerHTML = item.anterior;
-            }
-            if(item.posterior){
-              tr.querySelector('td:nth-child(3)').innerHTML = item.posterior;
-            }
-          }
-          else{
-            nodoDom.appendChild(creaFila(item.nombre, item.anterior??CELDA_DEFAULT, item.posterior??CELDA_DEFAULT));
-          }
-        });
-      }
       function validaFecha(date){
         return isNaN(Date.parse(date))? new Date(): date;
       }
